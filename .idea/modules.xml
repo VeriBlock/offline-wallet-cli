@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/offline-wallet-cli.iml" filepath="$PROJECT_DIR$/offline-wallet-cli.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/offline-wallet-cli_main.iml" filepath="$PROJECT_DIR$/.idea/modules/offline-wallet-cli_main.iml" group="offline-wallet-cli" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/offline-wallet-cli_test.iml" filepath="$PROJECT_DIR$/.idea/modules/offline-wallet-cli_test.iml" group="offline-wallet-cli" />
+    </modules>
+  </component>
+</project>

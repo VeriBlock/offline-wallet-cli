@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'nebula.release' version '6.0.0'
+}
+
+// Define the main class for the application
+mainClassName = 'veriblock.Main'
+
+repositories {
+    //pull dependencies from local /lib folder
+    mavenLocal()
+    jcenter()
+
+    //pull dependencies from local /lib folder
+    flatDir {
+        dirs '/lib'
+    }
+}
+
+dependencies {
+    compile 'ch.qos.logback:logback-classic:1.2.3'
+
+    //Keep it simple, just pull all jar files from /lib folder
+    compile fileTree(dir: 'lib', include: '*.jar')
+}
+
+jar {
+    manifest {
+        attributes 'Name': 'veriblock',
+                'Specification-Title': 'offline-wallet-cli',
+                'Specification-Version': version.toString().split(/-/)[0],
+                'Specification-Vendor': 'VeriBlock',
+                'Implementation-Title': 'veriblock',
+                'Implementation-Version': version,
+                'Implementation-Vendor': 'VeriBlock'
+    }
+}
+
+nebulaRelease {
+    addReleaseBranchPattern(/(release(-|\/))?\d+(.\d+)?(.\d+)?/)
+}
+
+ext {
+    println "##teamcity[buildNumber \'${version}\']"
+}
