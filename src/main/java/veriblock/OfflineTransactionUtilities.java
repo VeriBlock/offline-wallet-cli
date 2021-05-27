@@ -45,7 +45,7 @@ public class OfflineTransactionUtilities {
             builder.setSourceAddress(ByteString.copyFrom(Base58.decode(sourceAddress)));
             builder.setSourceAmount(sourceAmount);
             builder.setType(VeriBlockMessages.Transaction.Type.STANDARD);
-
+            builder.setTimestamp(Utility.getCurrentTimeSeconds());
             builder.setData(ByteString.copyFrom(new byte[]{}));
 
             for (Output output : outputs) {
@@ -174,6 +174,7 @@ public class OfflineTransactionUtilities {
             txBuilder.setSourceAddress(ByteString.copyFrom(Base59.decode(sourceAddress)));
             txBuilder.setSourceAmount(sourceAmount);
             txBuilder.setType(VeriBlockMessages.Transaction.Type.MULTISIG);
+            txBuilder.setTimestamp(Utility.getCurrentTimeSeconds());
             txBuilder.setData(ByteString.copyFrom(new byte[]{}));
 
             for (Output output : outputs) {
