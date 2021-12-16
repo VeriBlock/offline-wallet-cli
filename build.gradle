@@ -11,6 +11,9 @@ repositories {
     //pull dependencies from local /lib folder
     mavenLocal()
     jcenter()
+    maven { url "http://artifactory.veriblock.com/artifactory/libs-snapshot-local/"}
+    maven { url "http://artifactory.veriblock.com/artifactory/libs-release-local/"}
+    maven { url 'http://artifactory.veriblock.com/artifactory/libs-release/' }
 
     //pull dependencies from local /lib folder
     flatDir {
@@ -22,6 +25,9 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:1.2.3'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.50"
+
+    compile group: 'veriblock', name: 'veriblock-core', version: '0.4.13-rc.11'
+    compile group: 'veriblock', name: 'nodecore-grpc', version: '0.4.13-rc.11'
 
     //Keep it simple, just pull all jar files from /lib folder
     compile fileTree(dir: 'lib', include: '*.jar')
