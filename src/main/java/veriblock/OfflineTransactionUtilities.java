@@ -8,7 +8,7 @@
 package veriblock;
 
 import com.google.protobuf.ByteString;
-import nodecore.api.grpc.*;
+import nodecore.api.grpc.VeriBlockMessages;
 import nodecore.api.grpc.utilities.ByteStringAddressUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +21,7 @@ import org.veriblock.core.types.Pair;
 import org.veriblock.core.utilities.AddressUtility;
 import org.veriblock.core.utilities.TransactionUtility;
 import org.veriblock.core.utilities.Utility;
-import org.veriblock.core.wallet.AddressManager;
-import org.veriblock.core.wallet.AddressPubKey;
+import org.veriblock.core.wallet.Address;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,29 +39,29 @@ public class OfflineTransactionUtilities {
             byte[] txid = calculateRegularTransactionTxID(sourceAddress, sourceAmount, outputs, signatureIndex);
             byte[] signature = addressManager.signMessage(txid, sourceAddress);
 
-            RpcTransaction.Builder builder = RpcTransaction.newBuilder();
+            VeriBlockMessages.Transaction.Builder builder = VeriBlockMessages.Transaction.newBuilder();
 
             builder.setTxId(ByteString.copyFrom(txid));
             builder.setSourceAddress(ByteString.copyFrom(Base58.decode(sourceAddress)));
             builder.setSourceAmount(sourceAmount);
-            builder.setType(RpcTransaction.Type.STANDARD);
+            builder.setType(VeriBlockMessages.Transaction.Type.STANDARD);
             builder.setTimestamp(Utility.getCurrentTimeSeconds());
             builder.setData(ByteString.copyFrom(new byte[]{}));
 
             for (Output output : outputs) {
-                RpcOutput.Builder outputBuilder = builder.addOutputsBuilder();
+                VeriBlockMessages.Output.Builder outputBuilder = builder.addOutputsBuilder();
 
                 outputBuilder.setAddress(ByteString.copyFrom(output.getAddress().toByteArray()));
                 outputBuilder.setAmount(output.getAmount().value());
             }
 
-            RpcSignedTransaction.Builder signedTransactionBuilder = RpcSignedTransaction.newBuilder();
+            VeriBlockMessages.SignedTransaction.Builder signedTransactionBuilder = VeriBlockMessages.SignedTransaction.newBuilder();
             signedTransactionBuilder.setPublicKey(ByteString.copyFrom(addressManager.getPublicKeyForAddress(sourceAddress).getEncoded()));
             signedTransactionBuilder.setSignatureIndex(signatureIndex);
             signedTransactionBuilder.setSignature(ByteString.copyFrom(signature));
             signedTransactionBuilder.setTransaction(builder);
 
-            RpcTransactionUnion.Builder unionBuilder = RpcTransactionUnion.newBuilder();
+            VeriBlockMessages.TransactionUnion.Builder unionBuilder = VeriBlockMessages.TransactionUnion.newBuilder();
 
             unionBuilder.setSigned(signedTransactionBuilder);
 
@@ -84,17 +83,17 @@ public class OfflineTransactionUtilities {
         return txid;
     }
 
-    public static byte[] compileSignedMultisigTransaction(RpcUnsignedMultisigTransactionWithIndex unsignedMultisigTransaction, String[] publicKeysOrAddresses, byte[][] signatures) {
+    public static byte[] compileSignedMultisigTransaction(VeriBlockMessages.UnsignedMultisigTransactionWithIndex unsignedMultisigTransaction, String[] publicKeysOrAddresses, byte[][] signatures) {
         byte[] txid = OfflineTransactionUtilities.calculateMultisigTxID(unsignedMultisigTransaction.getUnsignedMultisigTansaction(), unsignedMultisigTransaction.getSignatureIndex());
 
         int validSignatures = 0;
 
-        RpcMultisigBundle.Builder multisigBundleBuilder = RpcMultisigBundle.newBuilder();
+        VeriBlockMessages.MultisigBundle.Builder multisigBundleBuilder = VeriBlockMessages.MultisigBundle.newBuilder();
 
         List<String> signingAddresses = new ArrayList<>();
 
         for (int i = 0; i < publicKeysOrAddresses.length; i++) {
-            RpcMultisigSlot.Builder multisigSlotBuilder = RpcMultisigSlot.newBuilder();
+            VeriBlockMessages.MultisigSlot.Builder multisigSlotBuilder = VeriBlockMessages.MultisigSlot.newBuilder();
             if (AddressUtility.isValidStandardAddress(publicKeysOrAddresses[i])) {
                 multisigSlotBuilder.setOwnerAddress(ByteString.copyFrom(Base58.decode(publicKeysOrAddresses[i])));
                 multisigSlotBuilder.setPopulated(false);
@@ -132,23 +131,23 @@ public class OfflineTransactionUtilities {
             throw new IllegalArgumentException("Only " + validSignatures + " valid signatures were provided (from addresses: " + signingAddressesStr.trim() + "), but " + m + " were required!");
         }
 
-        RpcSignedMultisigTransaction.Builder signedMultisigTransactionBuilder = RpcSignedMultisigTransaction.newBuilder();
+        VeriBlockMessages.SignedMultisigTransaction.Builder signedMultisigTransactionBuilder = VeriBlockMessages.SignedMultisigTransaction.newBuilder();
 
         signedMultisigTransactionBuilder.setSignatureBundle(multisigBundleBuilder.build());
         signedMultisigTransactionBuilder.setTransaction(unsignedMultisigTransaction.getUnsignedMultisigTansaction());
         signedMultisigTransactionBuilder.setSignatureIndex(unsignedMultisigTransaction.getSignatureIndex());
 
-        RpcTransactionUnion.Builder txUnionBuilder = RpcTransactionUnion.newBuilder();
+        VeriBlockMessages.TransactionUnion.Builder txUnionBuilder = VeriBlockMessages.TransactionUnion.newBuilder();
         txUnionBuilder.setSignedMultisig(signedMultisigTransactionBuilder);
 
         return txUnionBuilder.build().toByteArray();
     }
 
-    public static byte[] calculateMultisigTxID(RpcTransaction transaction, long signatureIndex) {
+    public static byte[] calculateMultisigTxID(VeriBlockMessages.Transaction transaction, long signatureIndex) {
         List<Output> outputs = new ArrayList<>();
 
         for (int i = 0; i < transaction.getOutputsCount(); i++) {
-            RpcOutput output = transaction.getOutputs(i);
+            VeriBlockMessages.Output output = transaction.getOutputs(i);
             outputs.add(new DefaultOutput(ByteStringAddressUtility.parseProperAddressTypeAutomatically(output.getAddress()), output.getAmount()));
         }
 
@@ -169,22 +168,22 @@ public class OfflineTransactionUtilities {
 
     public static byte[] generateUnsignedMultisigTransaction(String sourceAddress, long sourceAmount, List<Output> outputs, long signatureIndex) {
         try {
-            RpcTransaction.Builder txBuilder = RpcTransaction.newBuilder();
+            VeriBlockMessages.Transaction.Builder txBuilder = VeriBlockMessages.Transaction.newBuilder();
 
             txBuilder.setTxId(ByteString.copyFrom(calculateMultisigTxID(sourceAddress, sourceAmount, outputs, signatureIndex)));
             txBuilder.setSourceAddress(ByteString.copyFrom(Base59.decode(sourceAddress)));
             txBuilder.setSourceAmount(sourceAmount);
-            txBuilder.setType(RpcTransaction.Type.MULTISIG);
+            txBuilder.setType(VeriBlockMessages.Transaction.Type.MULTISIG);
             txBuilder.setTimestamp(Utility.getCurrentTimeSeconds());
             txBuilder.setData(ByteString.copyFrom(new byte[]{}));
 
             for (Output output : outputs) {
-                RpcOutput.Builder outputBuilder = txBuilder.addOutputsBuilder();
+                VeriBlockMessages.Output.Builder outputBuilder = txBuilder.addOutputsBuilder();
                 outputBuilder.setAddress(ByteString.copyFrom(output.getAddress().toByteArray()));
                 outputBuilder.setAmount(output.getAmount().value());
             }
 
-            RpcUnsignedMultisigTransactionWithIndex.Builder unsignedMultisigTransactionBuilder = RpcUnsignedMultisigTransactionWithIndex.newBuilder();
+            VeriBlockMessages.UnsignedMultisigTransactionWithIndex.Builder unsignedMultisigTransactionBuilder = VeriBlockMessages.UnsignedMultisigTransactionWithIndex.newBuilder();
             unsignedMultisigTransactionBuilder.setUnsignedMultisigTansaction(txBuilder);
             unsignedMultisigTransactionBuilder.setSignatureIndex(signatureIndex);
 
@@ -199,7 +198,7 @@ public class OfflineTransactionUtilities {
         return addressManager.signMessage(message, address);
     }
 
-    private AddressPubKey getNewAddress(AddressManager addressManager) {
+    private Address getNewAddress(AddressManager addressManager) {
         try {
             return addressManager.getNewAddress();
         } catch (IOException e) {

@@ -7,20 +7,21 @@
 
 package veriblock;
 
-import nodecore.api.grpc.RpcUnsignedMultisigTransactionWithIndex;
+import nodecore.api.grpc.VeriBlockMessages;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.veriblock.core.DefaultOutput;
+import org.veriblock.core.contracts.AddressManager;
 import org.veriblock.core.contracts.Output;
 import org.veriblock.core.utilities.AddressUtility;
 import org.veriblock.core.utilities.Utility;
-import org.veriblock.core.wallet.AddressManager;
-import org.veriblock.core.wallet.AddressPubKey;
+import org.veriblock.core.wallet.Address;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CommandProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(CommandProcessor.class);
 
     public AddressManager addressManager;
 
@@ -90,7 +91,7 @@ public class CommandProcessor {
             public boolean validate(String toValidate) {
                 try {
                     byte[] transactionBytes = Utility.hexToBytes(toValidate);
-                    RpcUnsignedMultisigTransactionWithIndex.parseFrom(transactionBytes);
+                    VeriBlockMessages.UnsignedMultisigTransactionWithIndex.parseFrom(transactionBytes);
 
                     return true;
                 } catch (Exception e) { }
@@ -356,9 +357,9 @@ public class CommandProcessor {
                     }
                 }
 
-                RpcUnsignedMultisigTransactionWithIndex unsignedTransaction;
+                VeriBlockMessages.UnsignedMultisigTransactionWithIndex unsignedTransaction;
                 try {
-                     unsignedTransaction = RpcUnsignedMultisigTransactionWithIndex.parseFrom(rawUnsignedMultisigTransaction);
+                     unsignedTransaction = VeriBlockMessages.UnsignedMultisigTransactionWithIndex.parseFrom(rawUnsignedMultisigTransaction);
 
                      byte[] transaction = OfflineTransactionUtilities.compileSignedMultisigTransaction(unsignedTransaction, publicKeysOrAddresses, signatures);
 
@@ -374,7 +375,7 @@ public class CommandProcessor {
             public String execute(String[] args, AddressManager addressManager) {
                 validateArguments(args);
 
-                List<AddressPubKey> addresses = addressManager.getAll();
+                List<Address> addresses = addressManager.getAll();
 
                 String msg = "";
 

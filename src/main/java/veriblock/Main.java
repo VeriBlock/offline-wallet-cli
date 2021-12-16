@@ -9,7 +9,8 @@ package veriblock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.veriblock.core.wallet.AddressManager;
+import org.veriblock.core.contracts.*;
+import org.veriblock.core.wallet.DefaultAddressManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -99,7 +100,7 @@ public class Main {
             walletPath = newWalletFile;
             File wallet = new File(walletPath);
 
-            AddressManager addressManager = new AddressManager();
+            AddressManager addressManager = new DefaultAddressManager();
             addressManager.load(wallet);
 
             String result = String.format("Switched to wallet file %s with default address %s", walletPath, addressManager.getDefaultAddress().getHash());
